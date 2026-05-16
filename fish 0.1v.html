@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fisch HTML - Symulator Wędkarskiego RPG</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-color: #1e293b;
+            --accent-color: #38bdf8;
+            --text-color: #f8fafc;
+            --zone-border: #374151;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;         
+            justify-content: flex-start; 
+            min-height: 100vh;
+            box-sizing: border-box;
+            transition: all 0.5s ease;
+            
+            -webkit-user-select: none; 
+            -moz-user-select: none;    
+            -ms-user-select: none;     
+            user-select: none;         
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 1100px; 
+            background: var(--panel-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            transition: all 0.5s ease;
+            box-sizing: border-box;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--zone-border);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--zone-border);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1.8fr 1.2fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .main-content { grid-template-columns: 1fr; }
+        }
+
+        .zone-panel, .shop-panel, .log-panel, .bestiary-panel, .inventory-panel, .save-panel, .enchant-panel, .blackmarket-panel, .codes-panel {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--zone-border);
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+
+        .blackmarket-panel {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(88, 28, 135, 0.2) 100%);
+            border: 1px solid #a855f7;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s, transform 0.1s;
+            width: 100%;
+            margin-top: 5px;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        button:hover { background: #1d4ed8; }
+        button:active { transform: scale(0.98); }
+        button:disabled { background: #4b5563; cursor: not-allowed; transform: none; }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--zone-border);
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+            box-sizing: border-box;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        #fishing-game {
+            display: none;
+            background: #030712;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        #cast-bar-container {
+            width: 100%;
+            height: 20px;
+            background: #374151;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+            display: none;
+        }
+
+        #cast-bar {
+            width: 0%;
+            height: 100%;
+            background: #eab308;
+            transition: width 0.1s linear;
+        }
+
+        #reeling-zone {
+            width: 100%;
+            height: 40px;
+            background: #1f2937;
+            position: relative;
+            margin: 20px 0;
+            border-radius: 20px;
+            overflow: hidden;
+            display: none;
+        }
+
+        #green-bar {
+            position: absolute;
+            width: 80px;
+            height: 100%;
+            background: rgba(34, 197, 94, 0.5);
+            left: 0;
+        }
+
+        #fish-icon {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #ef4444;
+            border-radius: 50%;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #catch-progress-container {
+            width: 100%;
+            height: 10px;
+            background: #374151;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        #catch-progress {
+            width: 50%;
+            height: 100%;
+            background: #22c55e;
+        }
+
+        #event-banner {
+            background: #7f1d1d;
+            color: #fca5a5;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: none;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.9; }
+            50% { opacity: 1; box-shadow: 0 0 15px #ef4444; }
+            100% { opacity: 0.9; }
+        }
+
+        .logs {
+            height: 130px;
+            overflow-y: auto;
+            font-size: 14px;
+            color: #9ca3af;
+            display: flex;
+            flex-direction: column-reverse;
+        }
+
+        .log-entry { margin-bottom: 4px; }
+        .rarity-common { color: #9ca3af; }
+        .rarity-uncommon { color: #4ade80; }
+        .rarity-rare { color: #00bcd4; }
+        .rarity-super-rare { color: #2196f3; }
+        .rarity-epic { color: #c084fc; }
+        .rarity-legendary { color: #facc15; }
+        .rarity-mythical { color: #f43f5e; font-weight: bold; }
+        .rarity-secret { color: #ff5722; font-weight: bold; text-shadow: 0 0 5px rgba(255,87,34,0.5); }
+        
+        .mutation { font-style: italic; text-shadow: 0 0 5px currentColor; }
+        .enchant-tag { color: #a855f7; font-weight: bold; font-size: 12px; }
+
+        .inv-list, .bestiary-grid {
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.4);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .inv-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .inv-item button {
+            width: auto;
+            padding: 3px 8px;
+            margin: 0;
+            font-size: 12px;
+            background: #16a34a;
+        }
+
+        .bestiary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 8px;
+        }
+
+        .bestiary-card {
+            background: rgba(255,255,255,0.05);
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .bestiary-card.undiscovered {
+            color: #4b5563;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .save-btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .bm-item {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid #581c87;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <header>
+        <h1>🐟 FISCH <span style="font-size: 14px; color: var(--accent-color);">Wersja HTML</span></h1>
+        <div id="player-title" style="font-weight: bold; color: #a855f7;">Tytuł: Nowicjusz Kija</div>
+    </header>
+
+    <div id="event-banner">⚠️ STRANGE EVENT TRWA!</div>
+
+    <div class="stats-grid">
+        <div class="stat-box">💰 Portfel<br><strong id="stat-money">0C$</strong></div>
+        <div class="stat-box">🌟 Poziom / XP<br><strong id="stat-level">1 (0/100)</strong></div>
+        <div class="stat-box">🎣 Wędka / Narzędzie<br><strong id="stat-rod">Steady Rod</strong> <span id="rod-enchant" class="enchant-tag"></span></div>
+        <div class="stat-box">⛵ Łódź<br><strong id="stat-boat">Dinghy</strong></div>
+    </div>
+
+    <div class="main-content">
+        <!-- LEWA KOLUMNA -->
+        <div>
+            <div class="zone-panel" id="main-zone-panel">
+                <h3>📍 Obecna Lokacja: <span id="current-zone-name" style="color: var(--accent-color);">Moosewood</span></h3>
+                <p id="zone-desc">Bezpieczna przystań dla początkujących. Idealne miejsce na start.</p>
+                
+                <button id="btn-cast" onclick="startCasting()">Zarzuć Wędkę</button>
+                <button id="btn-hook" onclick="hookFish()" style="display:none; background:#ef4444;">HACZYK! (KLIKAJ!)</button>
+
+                <div id="fishing-game">
+                    <h4 id="game-status">Ładowanie rzutu...</h4>
+                    <div id="cast-bar-container"><div id="cast-bar"></div></div>
+                    
+                    <div id="reeling-zone">
+                        <div id="green-bar"></div>
+                        <div id="fish-icon"></div>
+                    </div>
+                    <div id="catch-progress-container">
+                        <div id="catch-progress"></div>
+                    </div>
+                    <p id="game-tip" style="font-size:12px; margin-top:5px; color:#9ca3af;">Trzymaj kliknięcie myszką/ekranu, aby przesuwać zielony pasek w prawo. Puść, by opadał. Trzymaj go na rybie!</p>
+                </div>
+            </div>
+
+            <div class="inventory-panel">
+                <h3>🪣 Twoje Wiaderko (Okazy na sprzedaż)</h3>
+                <div class="inv-list" id="inventory-list"></div>
+                <button id="btn-sell-all" style="background: #eab308; color: #000;" onclick="sellAllFish()">💰 Sprzedaj wszystkie okazy</button>
+            </div>
+
+            <div class="bestiary-panel">
+                <h3>📘 Rybackie i Botaniczne Bestiarium (<span id="bestiary-count">0/0</span>)</h3>
+                <div class="bestiary-grid" id="bestiary-layout"></div>
+            </div>
+
+            <div class="zone-panel">
+                <h3>🗺️ Podróżuj na inne wyspy</h3>
+                <div id="travel-buttons"></div>
+            </div>
+        </div>
+
+        <!-- PRAWA KOLUMNA -->
+        <div>
+            <div class="blackmarket-panel">
+                <h3 style="color: #c084fc; margin-top: 0; display: flex; justify-content: space-between; align-items: center;">
+                    <span>🕵️‍♂️ Czarny Rynek</span>
+                    <span id="bm-timer" style="font-size: 12px; color: #9ca3af; font-weight: normal;">Dostawa za: --:--:--</span>
+                </h3>
+                <p style="font-size: 11px; color: #c084fc; margin-bottom: 10px; font-style: italic;">Przemytnicy oferują potężne towary. Nowy towar co 3 godziny.</p>
+                <div id="blackmarket-items"></div>
+            </div>
+
+            <div class="shop-panel">
+                <h3>🛒 Sklep (Kupowanie Wędek i Łodzi)</h3>
+                <div id="shop-items"></div>
+            </div>
+
+            <div class="enchant-panel">
+                <h3>🔮 Mistyczne Kowadło Enchantów</h3>
+                <p style="font-size: 13px; color: #9ca3af; margin-bottom: 10px;">
+                    Posiadane relikwie: <strong id="relic-count" style="color: #a855f7;">0</strong><br>
+                    <span style="font-size: 11px;">(Masz szansę 1-300 na wyłowienie relikwii przy każdym sukcesie!)</span>
+                </p>
+                <button id="btn-enchant" onclick="enchantEquippedRod()" style="background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);">
+                    ✨ Zaklnij trzymaną wędkę (Zużywa 1 Relikwię)
+                </button>
+            </div>
+
+            <div class="log-panel">
+                <h3>📋 Wiadomości i Złowy</h3>
+                <div class="logs" id="game-logs">
+                    <div class="log-entry">Witaj w Fisch! Zarzuć wędkę, aby rozpocząć przygodę.</div>
+                </div>
+            </div>
+
+            <div class="codes-panel">
+                <h3>🔑 Kody Promocyjne (Promo Codes)</h3>
+                <input type="text" id="code-input" placeholder="WPISZ KOD TUTAJ" />
+                <button onclick="redeemCode()" style="background: #10b981; margin-top: 8px;">Zrealizuj Kod</button>
+            </div>
+
+            <div class="save-panel">
+                <h3>💾 Zarządzanie Zapisem</h3>
+                <div class="save-btn-group">
+                    <button onclick="saveGame()" style="background: #16a34a;">Zapisz Grę</button>
+                    <button onclick="wipeSave()" style="background: #dc2626;">Resetuj Postęp</button>
+                </div>
+                <p style="font-size:11px; color:#9ca3af; text-align:center; margin-top:8px; margin-bottom:0;">Gra zapisuje się automatycznie co 10 sekund oraz po każdym złowieniu / zakupie.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const ZONES = {
+        moosewood: { 
+            name: "Moosewood", 
+            desc: "Startowa wyspa. Spokojne, głębokie i zielone lasy wokół bezpiecznej przystani.", 
+            reqLevel: 1, 
+            theme: { bg: "#0f172a", panel: "#1e293b", accent: "#38bdf8", border: "#374151" },
+            actionName: "Zarzuć Wędkę", progressName: "Ładowanie rzutu...", hookName: "HACZYK! (KLIKAJ!)", waitingName: "Oczekiwanie na rybę... Szum fal...", tip: "Trzymaj kliknięcie myszką/ekranu, aby przesuwać zielony pasek w prawo. Puść, by opadał. Trzymaj go na rybie!",
+            fish: [
+                { id: "karas", name: "Karaś", rarity: "common", price: 10 },
+                { id: "okon", name: "Okoń", rarity: "uncommon", price: 25 },
+                { id: "szczupak", name: "Szczupak", rarity: "rare", price: 60 },
+                { id: "brick", name: "Cegła (Brick)", rarity: "legendary", price: 300 }
+            ]
+        },
+        roslit: { 
+            name: "Roslit Bay", 
+            desc: "Tropikalna wyspa otoczona słoneczną rają, ciepłym piaskiem i koralowcami.", 
+            reqLevel: 3, 
+            theme: { bg: "#0c4a6e", panel: "#0ea5e9", accent: "#fef08a", border: "#bae6fd" },
+            actionName: "Zarzuć Wędkę", progressName: "Ładowanie rzutu...", hookName: "HACZYK! (KLIKAJ!)", waitingName: "Oczekiwanie na rybę... Szum fal...", tip: "Trzymaj kliknięcie myszką/ekranu, aby przesuwać zielony pasek w prawo. Puść, by opadał. Trzymaj go na rybie!",
+            fish: [
+                { id: "blazenek", name: "Błazenek", rarity: "common", price: 25 },
+                { id: "papuzak", name: "Papużak", rarity: "uncommon", price: 55 },
+                { id: "tunczyk", name: "Tuńczyk żółtopłetwy", rarity: "epic", price: 150 },
+                { id: "marlin", name: "Marlin Błękitny", rarity: "legendary", price: 400 }
+            ]
+        },
+        sunstone: { 
+            name: "Sunstone Island", 
+            desc: "Wulkaniczne piekło z rzekami płynnego ognia. Spowite dymem i niebezpieczeństwem.", 
+            reqLevel: 5, 
+            theme: { bg: "#451a03", panel: "#78350f", accent: "#f97316", border: "#b45309" },
+            actionName: "Zarzuć Wędkę", progressName: "Ładowanie rzutu...", hookName: "HACZYK! (KLIKAJ!)", waitingName: "Oczekiwanie na rybę... Szum fal...", tip: "Trzymaj kliknięcie myszką/ekranu, aby przesuwać zielony pasek w prawo. Puść, by opadał. Trzymaj go na rybie!",
+            fish: [
+                { id: "skalar_p", name: "Piekielny Skalar", rarity: "uncommon", price: 80 },
+                { id: "krab_m", name: "Magmowy Krab", rarity: "rare", price: 180 },
+                { id: "pozeracz_o", name: "Obsidianowy Pożeracz", rarity: "epic", price: 350 },
+                { id: "feniks_o", name: "Feniks Oceaniczny", rarity: "mythical", price: 1200 }
+            ]
+        },
+        desolate: { 
+            name: "Desolate Deep", 
+            desc: "Mroczne, lodowate i niezbadane głębiny podziemnego i bezkresnego oceanu.", 
+            reqLevel: 8, 
+            theme: { bg: "#111827", panel: "#1f2937", accent: "#c084fc", border: "#4b5563" },
+            actionName: "Zarzuć Wędkę", progressName: "Ładowanie rzutu...", hookName: "HACZYK! (KLIKAJ!)", waitingName: "Oczekiwanie na rybę... Szum fal...", tip: "Trzymaj kliknięcie myszką/ekranu, aby przesuwać zielony pasek w prawo. Puść, by opadał. Trzymaj go na rybie!",
+            fish: [
+                { id: "zabnica", name: "Żabnica", rarity: "rare", price: 200 },
+                { id: "wegorz_g", name: "Węgorz Głębinowy", rarity: "epic", price: 420 },
+                { id: "kalamarnica_o", name: "Kałamarnica Olbrzymia", rarity: "legendary", price: 900 },
+                { id: "lewiatan", name: "Przedwieczny Lewiatan", rarity: "mythical", price: 2500 }
+            ]
+        },
+        floraIsland: {
+            name: "Wyspa Roślinności (Flora Island)",
+            desc: "Gęsto zarośnięta wyspa tętniąca życiem. Zamiast ryb, przeszukujesz krzaki i pnącza w poszukiwaniu rzadkich okazów botanicznych.",
+            reqLevel: 2,
+            theme: { bg: "#064e3b", panel: "#0f766e", accent: "#4ade80", border: "#115e59" },
+            // INTERFEJS I INTERAKCJA: Powrót do domyślnych tekstów łowienia z Twojego szablonu
+            actionName: "Zarzuć Wędkę", progressName: "Ładowanie rzutu...", hookName: "HACZYK! (KLIKAJ!)", waitingName: "Oczekiwanie na rybę... Szum fal...", tip: "Trzymaj kliknięcie myszką/ekranu, aby przesuwać zielony pasek w prawo. Puść, by opadał. Trzymaj go na rybie!",
+            fish: [
+                // NERF CENOWY (Zbalansowana ekonomia)
+                // COMMON
+                { id: "paproc", name: "Zwykła Paproć", rarity: "common", price: 8 },
+                { id: "stokrotka", name: "Leśna Stokrotka", rarity: "common", price: 10 },
+                { id: "mech", name: "Zielony Mech", rarity: "common", price: 12 },
+                { id: "mieta", name: "Dzika Mięta", rarity: "common", price: 12 },
+                { id: "mniszek", name: "Mniszek Lekarski", rarity: "common", price: 14 },
+                { id: "pokrzywa", name: "Pokrzywa Zwyczajna", rarity: "common", price: 15 },
+                { id: "lopian", name: "Liść Łopianu", rarity: "common", price: 16 },
+                { id: "koniczyna", name: "Polna Koniczyna", rarity: "common", price: 18 },
+                { id: "jagoda", name: "Jagoda Leśna", rarity: "common", price: 20 },
+                { id: "bluszcz", name: "Bluszcz Pospolity", rarity: "common", price: 22 },
+                // UNCOMMON
+                { id: "wrzos", name: "Purpurowy Wrzos", rarity: "uncommon", price: 30 },
+                { id: "niezapominajka", name: "Kwiatek Niezapominajki", rarity: "uncommon", price: 32 },
+                { id: "czosnek", name: "Dziki Czosnek Niedźwiedzi", rarity: "uncommon", price: 35 },
+                { id: "kora_debu", name: "Kora Pradawnego Dębu", rarity: "uncommon", price: 40 },
+                { id: "szarotka", name: "Górski Szarotka", rarity: "uncommon", price: 42 },
+                { id: "lilia", name: "Wodna Lilia", rarity: "uncommon", price: 45 },
+                { id: "krzew", name: "Ognisty Krzew", rarity: "uncommon", price: 50 },
+                { id: "porost", name: "Srebrny Porost", rarity: "uncommon", price: 55 },
+                { id: "zurawiec", name: "Bagnisty Żurawiec", rarity: "uncommon", price: 60 },
+                { id: "borowik", name: "Grzyb Borowik Szlachetny", rarity: "uncommon", price: 75 },
+                // RARE
+                { id: "orchidea", name: "Niebieska Orchidea", rarity: "rare", price: 95 },
+                { id: "paprotnik", name: "Lśniący Paprotnik", rarity: "rare", price: 105 },
+                { id: "wilcza_jagoda", name: "Trujący Wilcza Jagoda", rarity: "rare", price: 110 },
+                { id: "kaktus", name: "Kaktus Pustynnego Świtu", rarity: "rare", price: 120 },
+                { id: "liczen", name: "Złoty Liczeń", rarity: "rare", price: 135 },
+                // SUPER RARE
+                { id: "lotos", name: "Księżycowy Lotos", rarity: "super-rare", price: 160 },
+                { id: "sukulent", name: "Kryształowy Sukulent", rarity: "super-rare", price: 175 },
+                { id: "tulipan", name: "Płonący Tulipan", rarity: "super-rare", price: 190 },
+                { id: "zorza_kwiat", name: "Zorza Polarna (Kwiat)", rarity: "super-rare", price: 210 },
+                { id: "zarodnik", name: "Gwiezdny Zarodnik", rarity: "super-rare", price: 240 },
+                // EPIC
+                { id: "medrzec", name: "Mędrzec Lasu", rarity: "epic", price: 280 },
+                { id: "mak", name: "Krwawy Mak Przeznaczenia", rarity: "epic", price: 300 },
+                { id: "storczyk", name: "Eteryczny Storczyk", rarity: "epic", price: 310 },
+                { id: "zywica", name: "Bursztynowa Żywica", rarity: "epic", price: 330 },
+                { id: "neon_grzyb", name: "Neonowy Grzyb Jaskiniowy", rarity: "epic", price: 340 },
+                { id: "mandragora", name: "Korzeń Mandragory", rarity: "epic", price: 360 },
+                { id: "oset", name: "Cienisty Oset", rarity: "epic", price: 380 },
+                { id: "wieczna_noc", name: "Kwiat Wiecznej Nocy", rarity: "epic", price: 400 },
+                { id: "mroz_roza", name: "Zamarznięta Róża", rarity: "epic", price: 420 },
+                { id: "widmowe_pnacze", name: "Widmowe Pnącze", rarity: "epic", price: 450 },
+                // LEGENDARY
+                { id: "yggdrasil", name: "Kwiat Drzewa Świata (Yggdrasil)", rarity: "legendary", price: 650 },
+                { id: "feniks_owoc", name: "Złoty Feniksowy Owoc", rarity: "legendary", price: 700 },
+                { id: "konwalia", name: "Pradawna Chrono-Konwalia", rarity: "legendary", price: 750 },
+                { id: "koralowa_flora", name: "Koralowa Flora Głębinowa", rarity: "legendary", price: 800 },
+                { id: "srebrnolist", name: "Niebiański Srebrnolist", rarity: "legendary", price: 850 },
+                { id: "astral_pak", name: "Mityczny Astralny Pąk", rarity: "legendary", price: 900 },
+                { id: "magma_zarodnik", name: "Wulkaniczny Zarodnik Magmy", rarity: "legendary", price: 920 },
+                { id: "diamentowiec", name: "Kwitnący Diamentowiec", rarity: "legendary", price: 950 },
+                { id: "niesmiertelnosc", name: "Kwiat Nieśmiertelności", rarity: "legendary", price: 980 },
+                { id: "alga_chaosu", name: "Tęczowa Alga Chaosu", rarity: "legendary", price: 1050 },
+                // SECRET
+                { id: "nasienie_pustki", name: "Kosmiczne Nasienie Pustki", rarity: "secret", price: 4500 }
+            ]
+        }
+    };
+
+    const MUTATIONS = [
+        { name: "Zwykła", multiplier: 1, class: "" },
+        { name: "Błyszcząca (Shiny)", multiplier: 2.5, class: "mutation rarity-legendary" },
+        { name: "Albinos", multiplier: 2, class: "mutation rarity-rare" },
+        { name: "Negatywna", multiplier: 3, class: "mutation rarity-epic" },
+        { name: "Złota (Golden)", multiplier: 5, class: "mutation rarity-legendary" },
+        { name: "Widmowa", multiplier: 10, class: "mutation rarity-mythical" }
+    ];
+
+    const ENCHANTS = [
+        { id: "lucky", name: "Lucky", desc: "+30% Szczęścia", luckMod: 1.3, controlMod: 1.0, goldMod: 1.0 },
+        { id: "control", name: "Control", desc: "+20% Kontroli paska", luckMod: 1.0, controlMod: 1.2, goldMod: 1.0 },
+        { id: "golden", name: "Golden", desc: "+25% C$ z okazów złowionych tą wędką", luckMod: 1.0, controlMod: 1.0, goldMod: 1.25 }
+    ];
+
+    const RODS = [
+        { name: "Steady Rod", price: 0, luck: 1, control: 1, reqLevel: 1 },
+        { name: "Carbon Rod", price: 250, luck: 1.5, control: 1.2, reqLevel: 2 },
+        { name: "Magma Rod", price: 800, luck: 2.2, control: 1.5, reqLevel: 4 },
+        { name: "Destiny Rod", price: 2500, luck: 4.0, control: 2.0, reqLevel: 7 },
+        { name: "Phantom Rod", price: 4000, luck: 5.5, control: 1.8, reqLevel: 6 },
+        { name: "Void Rod", price: 7500, luck: 7.0, control: 2.5, reqLevel: 9 }
+    ];
+
+    const BOATS = [
+        { name: "Dinghy", price: 0, speed: 1 },
+        { name: "Speedboat", price: 400, speed: 2.5 },
+        { name: "Luxury Yacht", price: 1500, speed: 5 }
+    ];
+
+    const EVENTS = [
+        { name: "Blood Moon (Krwawy Księżyc)", multiplier: 3, desc: "Wszystko bierze wściekle i ma ogromną wartość!", color: "#7f1d1d" },
+        { name: "Meteor Shower (Deszcz Meteorów)", multiplier: 2, desc: "Z kosmosu spadają mityczne anomalie!", color: "#4c1d95" },
+        { name: "Zwykły dzień", multiplier: 1, desc: "", color: "" }
+    ];
+
+    const BM_POOL = [
+        { id: "relic", type: "item", name: "Starożytna Relikwia", price: 600, desc: "Pozwala na ulepszenie narzędzia u kowala." },
+        { id: "rod_phantom", type: "rod", name: "Phantom Rod", price: 3200, desc: "Mroczny sprzęt z ogromnym szczęściem (Wymaga Lvl 6)." },
+        { id: "rod_void", type: "rod", name: "Void Rod", price: 6500, desc: "Najpotężniejsze narzędzie pustki (Wymaga Lvl 9)." },
+        { id: "booster", type: "booster", name: "Mikstura Szczęścia", price: 150, desc: "Dodaje natychmiastowo +100 XP do konta gracza." }
+    ];
+
+    const GAME_CODES = {
+        "HELLOGUYS": { money: 100, xp: 0, relics: 0, msg: "Dodano +100 C$!" },
+        "FISCH2026": { money: 500, xp: 0, relics: 1, msg: "Dodano +500 C$ oraz 1 Relikwię!" },
+        "MYTHICALXP": { money: 0, xp: 250, relics: 0, msg: "Dodano +250 punktów XP!" }
+    };
+
+    let player = {
+        money: 50,
+        xp: 0,
+        level: 1,
+        currentZone: "moosewood",
+        rod: RODS[0],
+        boat: BOATS[0],
+        ownedRods: ["Steady Rod"],
+        ownedBoats: ["Dinghy"],
+        inventory: [],
+        discoveredFish: [],
+        relics: 0,
+        rodEnchants: {},
+        redeemedCodes: []
+    };
+
+    let blackMarket = {
+        lastRestock: 0,
+        items: []
+    };
+
+    let currentEvent = EVENTS[2];
+    let fishingState = {
+        stage: "idle", castPower: 0, fishProgress: 50, fishX: 50, barX: 30, fishSpeed: 2, fishDir: 1, activeFish: null, isPressing: false
+    };
+
+    let intervals = {};
+
+    function initGame() {
+        loadGame(); 
+        applyZoneInterface(player.currentZone);
+        
+        checkBlackMarketRestock();
+        setInterval(checkBlackMarketRestock, 1000); 
+
+        updateUI();
+        renderTravel();
+        renderShop();
+        renderBestiary();
+        renderInventory();
+        
+        setInterval(randomizeEvent, 45000);
+        setInterval(saveGame, 10000); 
+
+        window.addEventListener("mousedown", () => { fishingState.isPressing = true; });
+        window.addEventListener("mouseup", () => { fishingState.isPressing = false; });
+        window.addEventListener("touchstart", (e) => { fishingState.isPressing = true; });
+        window.addEventListener("touchend", () => { fishingState.isPressing = false; });
+    }
+
+    function saveGame() {
+        const saveData = {
+            money: player.money,
+            xp: player.xp,
+            level: player.level,
+            currentZone: player.currentZone,
+            rodName: player.rod.name,
+            boatName: player.boat.name,
+            ownedRods: player.ownedRods,
+            ownedBoats: player.ownedBoats,
+            inventory: player.inventory,
+            discoveredFish: player.discoveredFish,
+            relics: player.relics,
+            rodEnchants: player.rodEnchants,
+            redeemedCodes: player.redeemedCodes,
+            bm_lastRestock: blackMarket.lastRestock,
+            bm_items: blackMarket.items
+        };
+        localStorage.setItem("fisch_rpg_save", JSON.stringify(saveData));
+        console.log("Zapisano stan gry.");
+    }
+
+    function loadGame() {
+        const rawData = localStorage.getItem("fisch_rpg_save");
+        if (!rawData) return; 
+
+        try {
+            const data = JSON.parse(rawData);
+            player.money = Number(data.money) ?? 50;
+            player.xp = Number(data.xp) ?? 0;
+            player.level = Number(data.level) ?? 1; 
+            player.currentZone = data.currentZone ?? "moosewood";
+            player.ownedRods = data.ownedRods ?? ["Steady Rod"];
+            player.ownedBoats = data.ownedBoats ?? ["Dinghy"];
+            player.inventory = data.inventory ?? [];
+            player.discoveredFish = data.discoveredFish ?? [];
+            player.relics = Number(data.relics) ?? 0;
+            player.rodEnchants = data.rodEnchants ?? {};
+            player.redeemedCodes = data.redeemedCodes ?? [];
+            
+            blackMarket.lastRestock = data.bm_lastRestock ?? 0;
+            blackMarket.items = data.bm_items ?? [];
+
+            player.rod = RODS.find(r => r.name === data.rodName) || RODS[0];
+            player.boat = BOATS.find(b => b.name === data.boatName) || BOATS[0];
+
+            addLog(`💾 Wczytano stan gry! Poziom: ${player.level} (${player.xp} XP)`, "rarity-rare");
+        } catch (e) {
+            console.error("Błąd podczas wczytywania: ", e);
+        }
+    }
+
+    function wipeSave() {
+        if (confirm("Czy na pewno chcesz zresetować grę? Stracisz wszystkie postępy!")) {
+            localStorage.removeItem("fisch_rpg_save");
+            location.reload(); 
+        }
+    }
+
+    function redeemCode() {
+        const input = document.getElementById("code-input");
+        const codeText = input.value.trim().toUpperCase();
+
+        if (codeText === "") {
+            alert("Najpierw wpisz jakiś kod!");
+            return;
+        }
+
+        if (player.redeemedCodes.includes(codeText)) {
+            addLog(`❌ Kod [${codeText}] został już wcześniej wykorzystany!`, "rarity-common");
+            input.value = "";
+            return;
+        }
+
+        if (GAME_CODES[codeText]) {
+            const reward = GAME_CODES[codeText];
+            
+            player.money += reward.money;
+            player.xp += reward.xp;
+            player.relics += reward.relics;
+            player.redeemedCodes.push(codeText);
+
+            addLog(`🎁 KOD ZREALIZOWANY: [${codeText}] -> ${reward.msg}`, "rarity-legendary");
+            
+            checkLevelUp(); 
+            updateUI();
+            renderShop();
+            input.value = "";
+            saveGame();
+        } else {
+            addLog(`❌ Podany kod [${codeText}] jest nieprawidłowy lub wygasł!`, "rarity-common");
+            input.value = "";
+        }
+    }
+
+    function checkBlackMarketRestock() {
+        const now = Date.now();
+        const threeHoursMs = 3 * 60 * 60 * 1000; 
+
+        if (now - blackMarket.lastRestock >= threeHoursMs || blackMarket.items.length === 0) {
+            blackMarket.lastRestock = now;
+            blackMarket.items = [];
+            
+            let poolCopy = [...BM_POOL];
+            for (let i = 0; i < 3; i++) {
+                if (poolCopy.length === 0) break;
+                let randomIndex = Math.floor(Math.random() * poolCopy.length);
+                let selected = poolCopy.splice(randomIndex, 1)[0];
+                blackMarket.items.push({
+                    ...selected,
+                    soldOut: false
+                });
+            }
+            addLog("🕵️‍♂️ Przemytnicy na Czarnym Rynku zmienili swoją ofertę!", "rarity-mythical");
+            renderBlackMarket();
+            saveGame();
+        } else {
+            const timeLeft = threeHoursMs - (now - blackMarket.lastRestock);
+            const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            
+            document.getElementById("bm-timer").innerText = `Dostawa za: ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            renderBlackMarket(); 
+        }
+    }
+
+    function renderBlackMarket() {
+        const container = document.getElementById("blackmarket-items");
+        if (!container) return;
+        container.innerHTML = "";
+
+        blackMarket.items.forEach((item, index) => {
+            const div = document.createElement("div");
+            div.className = "bm-item";
+
+            let buttonText = `Kup za ${item.price} C$`;
+            let disabled = player.money < item.price;
+
+            if (item.soldOut) {
+                buttonText = "WYPRZEDANE";
+                disabled = true;
+            }
+
+            if (item.type === "rod") {
+                const rodObj = RODS.find(r => r.name === item.name);
+                if (player.ownedRods.includes(item.name)) {
+                    buttonText = "Posiadasz już ten sprzęt";
+                    disabled = true;
+                } else if (player.level < rodObj.reqLevel) {
+                    buttonText = `Zablokowane (Wymaga Lvl ${rodObj.reqLevel})`;
+                    disabled = true;
+                }
+            }
+
+            div.innerHTML = `
+                <div style="display: flex; justify-content: space-between; font-weight: bold; color: #facc15; margin-bottom: 3px;">
+                    <span>${item.name}</span>
+                    <span style="color: #a855f7;">${item.price} C$</span>
+                </div>
+                <div style="color: #9ca3af; font-size: 11px; margin-bottom: 6px;">${item.desc}</div>
+                <button onclick="buyBlackMarketItem(${index})" style="background: #581c87; font-size: 12px; padding: 6px;" ${disabled ? "disabled" : ""}>
+                    ${buttonText}
+                </button>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function buyBlackMarketItem(index) {
+        let item = blackMarket.items[index];
+        if (player.money < item.price || item.soldOut) return;
+
+        player.money -= item.price;
+        item.soldOut = true;
+
+        if (item.id === "relic") {
+            player.relics++;
+            addLog(`🕵️‍♂️ Zakupiono na Czarnym Rynku: ${item.name}!`, "rarity-epic");
+        } else if (item.id === "booster") {
+            player.xp += 100;
+            addLog(`🕵️‍♂️ Wypiłeś Miksturę Szczęścia: Otrzymujesz +100 XP!`, "rarity-uncommon");
+            checkLevelUp();
+        } else if (item.type === "rod") {
+            player.ownedRods.push(item.name);
+            player.rod = RODS.find(r => r.name === item.name);
+            addLog(`🕵️‍♂️ Kupiłeś unikalny sprzęt przemytników: ${item.name}!`, "rarity-mythical");
+        }
+
+        updateUI();
+        renderBlackMarket();
+        renderShop();
+        saveGame();
+    }
+
+    function applyZoneInterface(zoneKey) {
+        const currentLoc = ZONES[zoneKey];
+        const theme = currentLoc.theme;
+        document.documentElement.style.setProperty('--bg-color', theme.bg);
+        document.documentElement.style.setProperty('--panel-color', theme.panel);
+        document.documentElement.style.setProperty('--accent-color', theme.accent);
+        document.documentElement.style.setProperty('--zone-border', theme.border);
+
+        document.getElementById("btn-cast").innerText = currentLoc.actionName;
+        document.getElementById("btn-hook").innerText = currentLoc.hookName;
+        document.getElementById("game-tip").innerText = currentLoc.tip;
+    }
+
+    function addLog(text, className = "") {
+        const logs = document.getElementById("game-logs");
+        if (!logs) return;
+        const entry = document.createElement("div");
+        entry.className = `log-entry ${className}`;
+        entry.innerHTML = `[${new Date().toLocaleTimeString()}] ${text}`;
+        logs.appendChild(entry);
+    }
+
+    function getActiveEnchantModifiers() {
+        const activeEnchantId = player.rodEnchants[player.rod.name];
+        if (!activeEnchantId) return { luckMod: 1.0, controlMod: 1.0, goldMod: 1.0 };
+        return ENCHANTS.find(e => e.id === activeEnchantId) || { luckMod: 1.0, controlMod: 1.0, goldMod: 1.0 };
+    }
+
+    function updateUI() {
+        document.getElementById("stat-money").innerText = `${player.money} C$`;
+        document.getElementById("stat-level").innerText = `${player.level} (${player.xp}/${player.level * 100} XP)`;
+        document.getElementById("stat-rod").innerText = player.rod.name;
+        document.getElementById("stat-boat").innerText = player.boat.name;
+        document.getElementById("current-zone-name").innerText = ZONES[player.currentZone].name;
+        document.getElementById("zone-desc").innerText = ZONES[player.currentZone].desc;
+        document.getElementById("relic-count").innerText = player.relics;
+
+        const currentEnchantId = player.rodEnchants[player.rod.name];
+        const enchantLabel = document.getElementById("rod-enchant");
+        if(currentEnchantId) {
+            const ench = ENCHANTS.find(e => e.id === currentEnchantId);
+            enchantLabel.innerText = `[✨ ${ench.name}]`;
+        } else {
+            enchantLabel.innerText = "";
+        }
+
+        document.getElementById("btn-enchant").disabled = player.relics <= 0;
+
+        let title = "Nowicjusz Kija";
+        if (player.level >= 3) title = "Młodszy Odkrywca";
+        if (player.level >= 5) title = "Wilk Morski";
+        if (player.level >= 8) title = "Botaniczny Pogromca";
+        document.getElementById("player-title").innerText = `Tytuł: ${title}`;
+    }
+
+    function randomizeEvent() {
+        currentEvent = EVENTS[Math.floor(Math.random() * EVENTS.length)];
+        const banner = document.getElementById("event-banner");
+        if(currentEvent.name !== "Zwykły dzień") {
+            banner.style.display = "block";
+            banner.style.backgroundColor = currentEvent.color;
+            banner.innerText = `⚠️ EVENT: ${currentEvent.name}! ${currentEvent.desc}`;
+            addLog(`Świat ogarnęła anomalia: ${currentEvent.name}!`, "rarity-mythical");
+        } else {
+            banner.style.display = "none";
+        }
+    }
+
+    function startCasting() {
+        if(fishingState.stage !== "idle") return;
+        
+        const loc = ZONES[player.currentZone];
+        fishingState.stage = "casting";
+        fishingState.castPower = 0;
+        document.getElementById("btn-cast").disabled = true;
+        document.getElementById("fishing-game").style.display = "block";
+        document.getElementById("cast-bar-container").style.display = "block";
+        document.getElementById("reeling-zone").style.display = "none";
+        document.getElementById("game-status").innerText = loc.progressName;
+
+        intervals.cast = setInterval(() => {
+            fishingState.castPower += 5;
+            document.getElementById("cast-bar").style.width = fishingState.castPower + "%";
+            if(fishingState.castPower >= 100) {
+                clearInterval(intervals.cast);
+                executeCast();
+            }
+        }, 50);
+    }
+
+    function executeCast() {
+        fishingState.stage = "waiting";
+        document.getElementById("cast-bar-container").style.display = "none";
+        document.getElementById("game-status").innerText = ZONES[player.currentZone].waitingName;
+
+        const mods = getActiveEnchantModifiers();
+        let waitTime = (Math.random() * 4000 + 2000) / (player.rod.luck * mods.luckMod);
+        if(currentEvent.name === "Blood Moon (Krwawy Księżyc)") waitTime /= 2;
+
+        setTimeout(() => {
+            if(fishingState.stage === "waiting") triggerHook();
+        }, waitTime);
+    }
+
+    function triggerHook() {
+        fishingState.stage = "hooking";
+        document.getElementById("game-status").innerText = "💥 COŚ JEST!!!";
+        document.getElementById("btn-hook").style.display = "block";
+
+        setTimeout(() => {
+            if(fishingState.stage === "hooking") {
+                addLog("Uciekło! Za wolno zareagowałeś!", "rarity-common");
+                resetFishing();
+            }
+        }, 1500);
+    }
+
+    function hookFish() {
+        if(fishingState.stage !== "hooking") return;
+        document.getElementById("btn-hook").style.display = "none";
+        
+        const zoneFish = ZONES[player.currentZone].fish;
+        const mods = getActiveEnchantModifiers();
+        let selectedFish;
+
+        if(player.currentZone === "moosewood" && Math.random() < 0.005) {
+            selectedFish = zoneFish.find(f => f.id === "brick");
+        } else {
+            let normalFish = zoneFish.filter(f => f.id !== "brick");
+            selectedFish = normalFish[Math.floor(Math.random() * normalFish.length)];
+            
+            if((player.rod.luck * mods.luckMod) > 1.5 && Math.random() < 0.3) {
+                let rareFish = normalFish.filter(f => f.rarity !== 'common');
+                if(rareFish.length > 0) selectedFish = rareFish[Math.floor(Math.random() * rareFish.length)];
+            }
+        }
+
+        fishingState.activeFish = { ...selectedFish };
+        fishingState.stage = "reeling";
+        fishingState.fishProgress = 50;
+        fishingState.fishX = 50;
+        fishingState.barX = 30;
+        
+        if(fishingState.activeFish.rarity === "common") fishingState.fishSpeed = 0.75;
+        if(fishingState.activeFish.rarity === "uncommon") fishingState.fishSpeed = 1.25;
+        if(fishingState.activeFish.rarity === "rare") fishingState.fishSpeed = 2.0;
+        if(fishingState.activeFish.rarity === "super-rare") fishingState.fishSpeed = 2.4;
+        if(fishingState.activeFish.rarity === "epic") fishingState.fishSpeed = 2.8;
+        if(fishingState.activeFish.rarity === "legendary") fishingState.fishSpeed = 3.5;
+        if(fishingState.activeFish.rarity === "secret") fishingState.fishSpeed = 4.5;
+        if(fishingState.activeFish.rarity === "mythical") fishingState.fishSpeed = 4.5;
+
+        document.getElementById("game-status").innerText = `Ujarzmiasz: ${fishingState.activeFish.name}!`;
+        document.getElementById("reeling-zone").style.display = "block";
+
+        startReelingLoop();
+    }
+
+    function startReelingLoop() {
+        const greenBar = document.getElementById("green-bar");
+        const fishIcon = document.getElementById("fish-icon");
+        const progressMeter = document.getElementById("catch-progress");
+        const mods = getActiveEnchantModifiers();
+
+        let barWidth = 80 * player.rod.control * mods.controlMod;
+        greenBar.style.width = barWidth + "px";
+
+        intervals.reel = setInterval(() => {
+            if(fishingState.isPressing) {
+                fishingState.barX += 0.55;
+            } else {
+                fishingState.barX -= 0.45;
+            }
+            if(fishingState.barX < 0) fishingState.barX = 0;
+            if(fishingState.barX > 100) fishingState.barX = 100;
+            greenBar.style.left = `calc(${fishingState.barX}% - ${barWidth / 2}px)`;
+
+            if(Math.random() < 0.02) fishingState.fishDir *= -1;
+            fishingState.fishX += fishingState.fishSpeed * fishingState.fishDir * 0.133;
+            
+            if(fishingState.fishX < 5) { fishingState.fishX = 5; fishingState.fishDir = 1; }
+            if(fishingState.fishX > 95) { fishingState.fishX = 95; fishingState.fishDir = -1; }
+            fishIcon.style.left = fishingState.fishX + "%";
+
+            let containerWidth = document.getElementById("reeling-zone").offsetWidth;
+            let fishPx = (fishingState.fishX / 100) * containerWidth;
+            let barLeftPx = (fishingState.barX / 100) * containerWidth - (barWidth/2);
+            let barRightPx = barLeftPx + barWidth;
+
+            if(fishPx >= barLeftPx && fishPx <= barRightPx) {
+                fishingState.fishProgress += 0.5;
+            } else {
+                fishingState.fishProgress -= 0.4;
+            }
+
+            progressMeter.style.width = fishingState.fishProgress + "%";
+
+            if(fishingState.fishProgress >= 100) {
+                catchSuccess();
+            } else if(fishingState.fishProgress <= 0) {
+                addLog(`Niestety, ${fishingState.activeFish.name} wyrwał się!`, "rarity-common");
+                resetFishing();
+            }
+        }, 10);
+    }
+
+    function catchSuccess() {
+        clearInterval(intervals.reel);
+        let fish = fishingState.activeFish;
+        const mods = getActiveEnchantModifiers();
+        
+        let mut = MUTATIONS[0];
+        let rolledMut = Math.random();
+        if(rolledMut > 0.95) mut = MUTATIONS[5];
+        else if(rolledMut > 0.90) mut = MUTATIONS[4];
+        else if(rolledMut > 0.82) mut = MUTATIONS[3];
+        else if(rolledMut > 0.70) mut = MUTATIONS[2];
+        else if(rolledMut > 0.55) mut = MUTATIONS[1];
+
+        let finalPrice = Math.round(fish.price * mut.multiplier * currentEvent.multiplier * mods.goldMod);
+        let xpGained = Math.round(fish.price * 0.5);
+
+        player.xp += xpGained;
+
+        player.inventory.push({
+            id: fish.id, name: fish.name, rarity: fish.rarity, mutationName: mut.name, mutationClass: mut.class, price: finalPrice
+        });
+
+        if(!player.discoveredFish.includes(fish.id)) {
+            player.discoveredFish.push(fish.id);
+            addLog(`📘 NOWY WPIS W BESTIARIUM: Odkryłeś okaz [${fish.name}]!`, "rarity-legendary");
+            renderBestiary();
+        }
+
+        let mutationText = mut.name !== "Zwykła" ? `[MUTACJA: ${mut.name}] ` : "";
+        addLog(`Zdobyto: ${mutationText}${fish.name} (${fish.rarity.toUpperCase()})! Wartość: ${finalPrice}C$, +${xpGained}XP`, `rarity-${fish.rarity}`);
+
+        if(Math.random() < (1 / 300)) {
+            player.relics++;
+            addLog(`🔮 NIESAMOWITE ZNALEZISKO! Wygrzebałeś z dna starożytną Relikwię Enchantu!`, "rarity-mythical");
+        }
+
+        checkLevelUp();
+        renderInventory();
+        resetFishing();
+        saveGame(); 
+    }
+
+    function enchantEquippedRod() {
+        if(player.relics <= 0) return;
+
+        player.relics--;
+        const randomEnchant = ENCHANTS[Math.floor(Math.random() * ENCHANTS.length)];
+        player.rodEnchants[player.rod.name] = randomEnchant.id;
+
+        addLog(`🔮 Kowadło rozbłysło! Twój sprzęt [${player.rod.name}] zyskał enchant: **${randomEnchant.name}** (${randomEnchant.desc})!`, "rarity-mythical");
+        
+        updateUI();
+        renderShop();
+        saveGame();
+    }
+
+    function renderInventory() {
+        const container = document.getElementById("inventory-list");
+        if (!container) return;
+        container.innerHTML = "";
+
+        if(player.inventory.length === 0) {
+            container.innerHTML = `<div style="text-align:center; color:#6b7280; padding: 10px;">Twoje wiaderko jest puste...</div>`;
+            document.getElementById("btn-sell-all").disabled = true;
+            return;
+        }
+
+        document.getElementById("btn-sell-all").disabled = false;
+
+        player.inventory.forEach((item, index) => {
+            const div = document.createElement("div");
+            div.className = "inv-item";
+            let mutLabel = item.mutationName !== "Zwykła" ? `<span class="${item.mutationClass}" style="font-size:11px;">${item.mutationName}</span> ` : "";
+            div.innerHTML = `
+                <div>
+                    ${mutLabel}<span class="rarity-${item.rarity}">${item.name}</span> 
+                    <span style="color:#eab308; font-size:12px;">(${item.price} C$)</span>
+                </div>
+                <button onclick="sellSingleFish(${index})">Sprzedaj</button>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function sellSingleFish(index) {
+        let fish = player.inventory[index];
+        player.money += fish.price;
+        addLog(`Sprzedano: ${fish.name} za ${fish.price} C$`, "rarity-uncommon");
+        player.inventory.splice(index, 1);
+        updateUI();
+        renderInventory();
+        renderShop();
+        saveGame();
+    }
+
+    function sellAllFish() {
+        if(player.inventory.length === 0) return;
+        let totalGain = 0;
+        player.inventory.forEach(fish => { totalGain += fish.price; });
+        player.money += totalGain;
+        addLog(`💰 Sprzedano zawartość wiaderka za łączną sumę ${totalGain} C$!`, "rarity-epic");
+        player.inventory = [];
+        updateUI();
+        renderInventory();
+        renderShop();
+        saveGame();
+    }
+
+    function renderBestiary() {
+        const container = document.getElementById("bestiary-layout");
+        if (!container) return;
+        container.innerHTML = "";
+
+        let allFishInGame = [];
+        Object.keys(ZONES).forEach(zKey => {
+            ZONES[zKey].fish.forEach(f => { allFishInGame.push({ ...f, zoneName: ZONES[zKey].name }); });
+        });
+
+        document.getElementById("bestiary-count").innerText = `${player.discoveredFish.length}/${allFishInGame.length}`;
+
+        allFishInGame.forEach(fish => {
+            const card = document.createElement("div");
+            if(player.discoveredFish.includes(fish.id)) {
+                card.className = "bestiary-card";
+                card.innerHTML = `
+                    <strong class="rarity-${fish.rarity}">${fish.name}</strong><br>
+                    <span style="font-size:10px; color:#9ca3af;">${fish.zoneName}</span><br>
+                    <span style="color:#eab308;">Baza: ${fish.price}C$</span>
+                `;
+            } else {
+                card.className = "bestiary-card undiscovered";
+                card.innerHTML = `<strong>???</strong><br><span style="font-size:10px; color:#4b5563;">Nieodkryte</span>`;
+            }
+            container.appendChild(card);
+        });
+    }
+
+    function checkLevelUp() {
+        let reqXp = player.level * 100;
+        while(player.xp >= reqXp) {
+            player.xp -= reqXp;
+            player.level++;
+            reqXp = player.level * 100;
+            addLog(`🌟 AWANSOWAŁEŚ NA POZIOM ${player.level}!`, "rarity-legendary");
+        }
+        updateUI();
+        renderTravel();
+        renderShop();
+    }
+
+    function resetFishing() {
+        clearInterval(intervals.cast);
+        clearInterval(intervals.reel);
+        fishingState.stage = "idle";
+        document.getElementById("fishing-game").style.display = "none";
+        document.getElementById("btn-cast").disabled = false;
+        document.getElementById("btn-hook").style.display = "none";
+        updateUI();
+    }
+
+    function renderTravel() {
+        const container = document.getElementById("travel-buttons");
+        if (!container) return;
+        container.innerHTML = "";
+
+        Object.keys(ZONES).forEach(key => {
+            const zone = ZONES[key];
+            const btn = document.createElement("button");
+            if(player.currentZone === key) {
+                btn.innerText = `${zone.name} (Tutaj jesteś)`;
+                btn.disabled = true;
+                btn.style.background = "var(--accent-color)";
+                btn.style.color = "#000";
+            } else if (player.level < zone.reqLevel) {
+                btn.innerText = `🔒 ${zone.name} (Wymagany Lvl ${zone.reqLevel})`;
+                btn.disabled = true;
+            } else {
+                btn.innerText = `Popłyń do ${zone.name} (${Math.round(6 / player.boat.speed)}s)`;
+                btn.onclick = () => travelTo(key);
+            }
+            container.appendChild(btn);
+        });
+    }
+
+    function travelTo(zoneKey) {
+        if(fishingState.stage !== "idle") return;
+        let travelTime = (6000 / player.boat.speed);
+        addLog(`Wypływasz łodzią ${player.boat.name} do ${ZONES[zoneKey].name}...`, "rarity-rare");
+        document.getElementById("btn-cast").disabled = true;
+
+        setTimeout(() => {
+            player.currentZone = zoneKey;
+            applyZoneInterface(zoneKey);
+            addLog(`Dopłynięto do ${ZONES[zoneKey].name}!`, "rarity-uncommon");
+            document.getElementById("btn-cast").disabled = false;
+            updateUI();
+            renderTravel();
+            saveGame();
+        }, travelTime);
+    }
+
+    function renderShop() {
+        const container = document.getElementById("shop-items");
+        if (!container) return;
+        container.innerHTML = "";
+
+        let h4_rods = document.createElement("h4");
+        h4_rods.innerText = "🎣 Narzędzia i Wędki";
+        container.appendChild(h4_rods);
+
+        RODS.forEach(rod => {
+            if(rod.name === "Phantom Rod" || rod.name === "Void Rod") {
+                if(!player.ownedRods.includes(rod.name)) return;
+            }
+
+            if(player.ownedRods.includes(rod.name) && player.rod.name === rod.name) return;
+            const div = document.createElement("div");
+            div.style.marginBottom = "8px";
+            let btnText = "";
+            let disabled = false;
+
+            const existingEnchant = player.rodEnchants[rod.name];
+            const enchantLabel = existingEnchant ? ` [✨ ${ENCHANTS.find(e => e.id === existingEnchant).name}]` : "";
+
+            if(player.ownedRods.includes(rod.name)) {
+                btnText = `Wyposaż ${rod.name}${enchantLabel} (Posiadasz)`;
+            } else {
+                btnText = `Kup ${rod.name} - ${rod.price}C$ (Lvl ${rod.reqLevel})`;
+                if(player.money < rod.price || player.level < rod.reqLevel) disabled = true;
+            }
+
+            const btn = document.createElement("button");
+            btn.innerText = btnText;
+            btn.disabled = disabled;
+            btn.style.background = player.ownedRods.includes(rod.name) ? "#4b5563" : "#16a34a";
+            btn.onclick = () => buyOrEquipRod(rod);
+            div.appendChild(btn);
+            container.appendChild(div);
+        });
+
+        let h4_boats = document.createElement("h4");
+        h4_boats.innerText = "⛵ Łodzie";
+        container.appendChild(h4_boats);
+
+        BOATS.forEach(boat => {
+            if(player.ownedBoats.includes(boat.name) && player.boat.name === boat.name) return;
+            const div = document.createElement("div");
+            div.style.marginBottom = "8px";
+            let btnText = "";
+            let disabled = false;
+
+            if(player.ownedBoats.includes(boat.name)) {
+                btnText = `Użyj ${boat.name} (Posiadasz)`;
+            } else {
+                btnText = `Kup ${boat.name} - ${boat.price}C$`;
+                if(player.money < boat.price) disabled = true;
+            }
+
+            const btn = document.createElement("button");
+            btn.innerText = btnText;
+            btn.disabled = disabled;
+            btn.style.background = player.ownedBoats.includes(boat.name) ? "#4b5563" : "#0284c7";
+            btn.onclick = () => buyOrEquipBoat(boat);
+            div.appendChild(btn);
+            container.appendChild(div);
+        });
+    }
+
+    function buyOrEquipRod(rod) {
+        if(player.ownedRods.includes(rod.name)) {
+            player.rod = rod;
+            addLog(`Wyposażono: ${rod.name}`);
+        } else {
+            player.money -= rod.price;
+            player.ownedRods.push(rod.name);
+            player.rod = rod;
+            addLog(`Zakupiono i wyposażono: ${rod.name}!`, "rarity-epic");
+        }
+        updateUI();
+        renderShop();
+        saveGame();
+    }
+
+    function buyOrEquipBoat(boat) {
+        if(player.ownedBoats.includes(boat.name)) {
+            player.boat = boat;
+            addLog(`Zmieniono łódź na: ${boat.name}`);
+        } else {
+            player.money -= boat.price;
+            player.ownedBoats.push(boat.name);
+            player.boat = boat;
+            addLog(`Kupiłeś nowy statek: ${boat.name}!`, "rarity-epic");
+        }
+        updateUI();
+        renderTravel();
+        renderShop();
+        saveGame();
+    }
+
+    window.onload = initGame;
+</script>
+
+</body>
+</html>

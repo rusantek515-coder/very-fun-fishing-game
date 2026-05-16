@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Cavern - Nowa Wyspa (Lvl 3)</title>
+    <style>
+        body {
+            background-color: #0b0c10;
+            color: #c5c6c7;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #45f3ff;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(69, 243, 255, 0.5);
+        }
+
+        .island-info {
+            background: linear-gradient(135deg, #1f2833, #0b0c10);
+            border-left: 5px solid #8a2be2;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .gear-section {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .gear-card {
+            background-color: #1f2833;
+            padding: 15px;
+            border-radius: 6px;
+            flex: 1;
+            border: 1px solid #45f3ff;
+        }
+
+        .gear-price {
+            color: #66fcf1;
+            font-weight: bold;
+        }
+
+        h2 {
+            color: #66fcf1;
+            border-bottom: 2px solid #1f2833;
+            padding-bottom: 5px;
+            margin-top: 40px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background-color: #11141a;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #1f2833;
+        }
+
+        th {
+            background-color: #1f2833;
+            color: #45f3ff;
+        }
+
+        /* Kolorowanie rzadkości */
+        .rare { color: #5dade2; font-weight: bold; }
+        .epic { color: #a569bd; font-weight: bold; text-shadow: 0 0 5px rgba(165, 105, 189, 0.3); }
+        .legendary { color: #f4d03f; font-weight: bold; text-shadow: 0 0 8px rgba(244, 208, 63, 0.5); }
+        .secret { color: #e74c3c; font-weight: bold; animation: pulse 2s infinite; }
+
+        .price-tag {
+            color: #2ecc71;
+            font-weight: bold;
+        }
+
+        @keyframes pulse {
+            0% { text-shadow: 0 0 5px #e74c3c; }
+            50% { text-shadow: 0 0 15px #e74c3c; }
+            100% { text-shadow: 0 0 5px #e74c3c; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Wyspa: Dark Cavern</h1>
+    
+    <div class="island-info">
+        <h3>Wymagany Poziom: <span style="color: #45f3ff;">3</span></h3>
+        <p>Tajemnicza, podziemna jaskinia rozświetlona jedynie przez bioluminescencyjne grzyby i kryształy. Woda jest tu lodowata, a w jej głębinach kryją się gatunki, które nigdy nie ujrzały światła słonecznego.</p>
+    </div>
+
+    <h2>🛠️ Nowy Ekwiony Ekwipunek (Sklepik)</h2>
+    <div class="gear-section">
+        <div class="gear-card">
+            <h4>Świecący Robak (Przynęta)</h4>
+            <p>Zwiększa szansę na złowienie ryb rzadkich (Rare) i epickich (Epic).</p>
+            <p class="gear-price">Koszt: 15 monet</p>
+        </div>
+        <div class="gear-card">
+            <h4>Fosforyzująca Błystka (Przynęta)</h4>
+            <p>Wymagana przynęta do zwabienia ryb Legendarnych.</p>
+            <p class="gear-price">Koszt: 50 monet</p>
+        </div>
+    </div>
+
+    <h2>🟢 Ryby Rzadkie (Rare)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Nazwa Ryby</th>
+                <th>Opis</th>
+                <th>Cena sprzedaży</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="rare">Neonowa Płotka</td>
+                <td>Mała rybka świecąca na jasnoniebiesko.</td>
+                <td class="price-tag">25 monet</td>
+            </tr>
+            <tr>
+                <td class="rare">Ślepy Jaskiniowiec</td>
+                <td>Ryba, która w toku ewolucji straciła oczy. Polega na węchu.</td>
+                <td class="price-tag">28 monet</td>
+            </tr>
+            <tr>
+                <td class="rare">Kryształowy Karaś</td>
+                <td>His łuski wyglądają jak odłamki kwarcu.</td>
+                <td class="price-tag">30 monet</td>
+            </tr>
+            <tr>
+                <td class="rare">Grzybojad</td>
+                <td>Żywi się jaskiniowymi pleśniami, ma dziwny, fioletowy odcień.</td>
+                <td class="price-tag">32 monety</td>
+            </tr>
+            <tr>
+                <td class="rare">Skalny Piskorz</td>
+                <td>Ukrywa się w szczelinach. Śliski i trudny do utrzymania.</td>
+                <td class="price-tag">35 monet</td>
+            </tr>
+            <tr>
+                <td class="rare">Mchowy Okoń</td>
+                <td>Pokryty specyficznym, podwodnym mchem jaskiniowym.</td>
+                <td class="price-tag">38 monet</td>
+            </tr>
+            <tr>
+                <td class="rare">Fioletowa Ukleja</td>
+                <td>Szybka rybka pływająca przy powierzchni jaskiniowych jeziorek.</td>
+                <td class="price-tag">40 monet</td>
+            </tr>
+            <tr>
+                <td class="rare">Kropelczak</td>
+                <td>Wygląda jak wielka, galaretowata kropla wody.</td>
+                <td class="price-tag">42 monety</td>
+            </tr>
+            <tr>
+                <td class="rare">Podziemny Sumik</td>
+                <td>Mały sum z bardzo długimi wąsami czuciowymi.</td>
+                <td class="price-tag">45 monet</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>🔵 Ryby Epickie (Epic)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Nazwa Ryby</th>
+                <th>Opis</th>
+                <th>Cena sprzedaży</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="epic">Ametystowy Szczupak</td>
+                <td>Drapieżnik o ostrych jak igły zębach i łuskach w kolorze głębokiego ametystu.</td>
+                <td class="price-tag">90 monet</td>
+            </tr>
+            <tr>
+                <td class="epic">Bioluminescencyjna Flądra</td>
+                <td>Płaska ryba denna, która pulsuje rytmicznym, zielonym światłem.</td>
+                <td class="price-tag">105 monet</td>
+            </tr>
+            <tr>
+                <td class="epic">Szmaragdowy Węgorz</td>
+                <td>Długi, wijący się węgorz, który zostawia za sobą delikatną smugę światła.</td>
+                <td class="price-tag">120 monet</td>
+            </tr>
+            <tr>
+                <td class="epic">Echemis</td>
+                <td>Ryba, która wydaje z siebie dźwięki przypominające echo spadających kropel.</td>
+                <td class="price-tag">135 monet</td>
+            </tr>
+            <tr>
+                <td class="epic">Jaskiniowy Skalar</td>
+                <td>Dostojna ryba o długich płetwach, przypominająca ducha w ciemności.</td>
+                <td class="price-tag">150 monet</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>🟡 Ryby Legendarne (Legendary)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Nazwa Ryby</th>
+                <th>Opis</th>
+                <th>Cena sprzedaży</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="legendary">Strażnik Otchłani</td>
+                <td>Potężna ryba o pancernej głowie. Pamięta czasy powstania jaskini.</td>
+                <td class="price-tag">350 monet</td>
+            </tr>
+            <tr>
+                <td class="legendary">Widmowy Rekin Jaskiniowy</td>
+                <td>Ślepy, biały rekin przystosowany do życia w głębinach. Bardzo agresywny.</td>
+                <td class="price-tag">400 monet</td>
+            </tr>
+            <tr>
+                <td class="legendary">Królowa Stalagmitów</td>
+                <td>Ryba o przedziwnym kształcie, idealnie kamuflująca się wśród skał.</td>
+                <td class="price-tag">450 monet</td>
+            </tr>
+            <tr>
+                <td class="legendary">Karmazynowy Lewiatan</td>
+                <td>Największy drapieżnik tego ekosystemu. Świeci złowrogim, czerwonym blaskiem.</td>
+                <td class="price-tag">500 monet</td>
+            </tr>
+            <tr>
+                <td class="legendary">Złoty Gwiezdnik</td>
+                <td>Legenda głosi, że spadła z nieba jako gwiazda. Jej łuski to czyste złoto.</td>
+                <td class="price-tag">600 monet</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>💜 Sekretna Ryba (Secret)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Nazwa Ryby</th>
+                <th>Opis / Warunek Złowienia</th>
+                <th>Cena sprzedaży</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="secret">Przedwieczny Cieniozwierz</td>
+                <td>Szansa &lt; 1%. Bierze tylko w miejscach, gdzie z sufitu kapią fioletowe krople wody. Widać tylko jej świecące oczy.</td>
+                <td class="price-tag">1200 monet</td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>
